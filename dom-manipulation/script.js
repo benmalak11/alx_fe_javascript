@@ -1,9 +1,14 @@
-let quotes = [
+let quotes = JSON.parse(localStorage.getItem("quotes")) || [
   { text: "Life is short, live it happily", category: "Inspiratoin" },
   { text: "Knowledge is light", category: "Education" },
   { text: "Don't put off today's work until tomorrow", category: "Wisdom" },
   { text: "Smile, life is more beautiful if you smile", category: "Happiness" }
 ];
+
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
 // دالة عرض اقتباس عشوائي
 function showRandomQuote() {
   let randomIndex = Math.floor(Math.random() * quotes.length);
@@ -34,7 +39,8 @@ function createAddQuoteForm() {
       category: categoryInput.value
     };
     if (newQuote.text && newQuote.category) {
-      quotes.push(newQuote); // إضافة للمصفوفة
+      quotes.push(newQuote);
+      saveQuotes(); // نحفظ المصفوفة في localStorage // إضافة للمصفوفة
       showRandomQuote(); // عرض الاقتباس الجديد
       textInput.value = "";
       categoryInput.value = "";
