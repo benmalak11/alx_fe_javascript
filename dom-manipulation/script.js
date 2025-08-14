@@ -4,19 +4,53 @@ let quotes = [
   { text: "Don't put off today's work until tomorrow", category: "Wisdom" },
   { text: "Smile, life is more beautiful if you smile", category: "Happiness" }
 ];
-
 // دالة عرض اقتباس عشوائي
 function showRandomQuote() {
   let randomIndex = Math.floor(Math.random() * quotes.length);
   let quote = quotes[randomIndex];
   document.getElementById("quoteDisplay").innerHTML = `
     <p><strong>${quote.text}</strong></p>
-    <small>Category: ${quote.category}</small>
+    <small>الفئة: ${quote.category}</small>
   `;
 }
 
-// تشغيل عند الضغط على الزر
+function createAddQuoteForm() {
+  let formContainer = document.createElement("div");
+
+  let textInput = document.createElement("input");
+  textInput.type = "text";
+  textInput.placeholder = "أدخل نص الاقتباس";
+
+  let categoryInput = document.createElement("input");
+  categoryInput.type = "text";
+  categoryInput.placeholder = "أدخل الفئة";
+
+  let addButton = document.createElement("button");
+  addButton.textContent = "إضافة اقتباس";
+
+  addButton.addEventListener("click", function () {
+    let newQuote = {
+      text: textInput.value,
+      category: categoryInput.value
+    };
+    if (newQuote.text && newQuote.category) {
+      quotes.push(newQuote); // إضافة للمصفوفة
+      showRandomQuote(); // عرض الاقتباس الجديد
+      textInput.value = "";
+      categoryInput.value = "";
+    }
+  });
+
+  formContainer.appendChild(textInput);
+  formContainer.appendChild(categoryInput);
+  formContainer.appendChild(addButton);
+
+  document.body.appendChild(formContainer);
+}
+
+// تفعيل زر عرض اقتباس جديد
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 
-// عرض اقتباس أولي عند تحميل الصفحة
+// عند تحميل الصفحة
 showRandomQuote();
+createAddQuoteForm();
