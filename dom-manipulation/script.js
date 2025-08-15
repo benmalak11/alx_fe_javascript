@@ -92,6 +92,26 @@ function importFromJsonFile(event) {
   };
   reader.readAsText(file); // قراءة الملف كنص
 }
+function populateCategories() {
+  const categorySelect = document.getElementById('categoryFilter');
+
+  // Remove old options except "All"
+  [...categorySelect.querySelectorAll('option:not([value="all"])')].forEach(opt => opt.remove());
+
+  // Get unique categories
+  const categories = new Set(quotes.map(q => q.category));
+
+  // Add them to the select
+  categories.forEach(cat => {
+    const option = document.createElement('option');
+    option.value = cat;
+    option.textContent = cat;
+    categorySelect.appendChild(option);
+  });
+}
+
+// Call this once when the page loads
+populateCategories();
 
 // ربط الحدث بزر الاستيراد
 document.getElementById('importQuotes').addEventListener('change', importFromJsonFile);
