@@ -74,37 +74,24 @@ document.getElementById("exportQuotes").addEventListener("click", function() {
     URL.revokeObjectURL(url);
 });
 
-// التحقق من أن الاقتباسات تُحفظ وتُسترجع من LocalStorage
-function testLocalStorage() {
-  localStorage.setItem("quotes", JSON.stringify(quotes));
-  const stored = JSON.parse(localStorage.getItem("quotes"));
-  console.assert(stored.length === quotes.length, "❌ LocalStorage Test Failed");
-  console.log("✅ LocalStorage Test Passed");
+function importFromJsonFile(event) {
+  const file = event.target.files[0]; // الحصول على الملف المختار
+  if (!file) return;
+
+  const reader = new FileReader(); // إنشاء FileReader
+  reader.onload = function(e) {
+    const content = e.target.result; // نص الملف
+    try {
+      const importedQuotes = JSON.parse(content); // تحويل النص إلى JSON
+      quotes = quotes.concat(importedQuotes); // إضافة الاقتباسات للمصفوفة
+      showRandomQuote(); // عرض اقتباس جديد
+      localStorage.setItem('quotes', JSON.stringify(quotes)); // تحديث التخزين المحلي
+    } catch (err) {
+      alert("Invalid JSON file!");
+    }
+  };
+  reader.readAsText(file); // قراءة الملف كنص
 }
 
-// التحقق من أن التصدير يعمل
-function testExport() {
-  const blob = new Blob([JSON.stringify(quotes)], { type: "application/json" });
-  console.assert(blob.size > 0, "❌ Export Test Failed");
-  console.log("✅ Export Test Passed");
-}
-
-// التحقق من أن الاستيراد يعمل
-function testImport(sampleData) {
-  try {
-    const imported = JSON.parse(sampleData);
-    console.assert(Array.isArray(imported), "❌ Import Test Failed - Not an array");
-    console.log("✅ Import Test Passed");
-  } catch {
-    console.error("❌ Import Test Failed - Invalid JSON");
-  }
-}
-
-// تشغيل كل الاختبارات
-function runAllTests() {
-  testLocalStorage();
-  testExport();
-  testImport(JSON.stringify([{ text: "Test Quote", category: "Test" }]));
-}
-
-runAllTests();
+// ربط الحدث بزر الاستيراد
+document.getElementById('importQuotes').addEventListener('change', importFromJsonFile);
