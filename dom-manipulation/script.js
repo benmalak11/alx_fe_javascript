@@ -60,3 +60,16 @@ document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 // عند تحميل الصفحة
 showRandomQuote();
 createAddQuoteForm();
+
+document.getElementById("exportQuotes").addEventListener("click", function() {
+    const data = JSON.stringify(quotes, null, 2); // Pretty JSON
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "quotes.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+});
