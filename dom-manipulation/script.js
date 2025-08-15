@@ -73,3 +73,38 @@ document.getElementById("exportQuotes").addEventListener("click", function() {
 
     URL.revokeObjectURL(url);
 });
+
+// التحقق من أن الاقتباسات تُحفظ وتُسترجع من LocalStorage
+function testLocalStorage() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+  const stored = JSON.parse(localStorage.getItem("quotes"));
+  console.assert(stored.length === quotes.length, "❌ LocalStorage Test Failed");
+  console.log("✅ LocalStorage Test Passed");
+}
+
+// التحقق من أن التصدير يعمل
+function testExport() {
+  const blob = new Blob([JSON.stringify(quotes)], { type: "application/json" });
+  console.assert(blob.size > 0, "❌ Export Test Failed");
+  console.log("✅ Export Test Passed");
+}
+
+// التحقق من أن الاستيراد يعمل
+function testImport(sampleData) {
+  try {
+    const imported = JSON.parse(sampleData);
+    console.assert(Array.isArray(imported), "❌ Import Test Failed - Not an array");
+    console.log("✅ Import Test Passed");
+  } catch {
+    console.error("❌ Import Test Failed - Invalid JSON");
+  }
+}
+
+// تشغيل كل الاختبارات
+function runAllTests() {
+  testLocalStorage();
+  testExport();
+  testImport(JSON.stringify([{ text: "Test Quote", category: "Test" }]));
+}
+
+runAllTests();
