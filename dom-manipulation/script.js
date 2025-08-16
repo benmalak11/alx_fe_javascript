@@ -138,70 +138,76 @@ window.addEventListener("load", () => {
   }
   filterQuotes();
 });
+
 const notification = document.getElementById("notification");
 const syncButton = document.getElementById("syncNow");
 
-// ✅ "خادم وهمي" لتجربة (بدل JSONPlaceholder)
-let mockServerData = [
-  { text: "Server Quote 1", category: "Motivation" },
-  { text: "Server Quote 2", category: "Life" }
-];
-
-// ✅ دالة لجلب البيانات من الخادم (GET)
+// ✅ جلب البيانات من سيرفر وهمي (JSONPlaceholder)
 async function fetchQuotesFromServer() {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(mockServerData), 1000);
-  });
-}
-
-// ✅ دالة لإرسال بيانات إلى الخادم (POST)
-async function postQuoteToServer(newQuote) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      mockServerData.push(newQuote);
-      resolve({ success: true, data: newQuote });
-    }, 1000);
-  });
-}
-
-// ✅ دالة المزامنة
-async function syncQuotes() {
-  let localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
-
   try {
-    let serverQuotes = await fetchQuotesFromServer();
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5");
+    const data = await response.json();
 
-    // دمج البيانات (الأولوية للسيرفر)
-    let merged = [...serverQuotes];
-    localQuotes.forEach((local) => {
-      if (!serverQuotes.some((srv) => srv.text === local.text)) {
-        merged.push(local);
-        // إرسال أي اقتباس محلي للسيرفر
-        postQuoteToServer(local);
-      }
-    });
-
-    // تحديث التخزين المحلي
-    localStorage.setItem("quotes", JSON.stringify(merged));
-
-    showNotification("✅ Synced with server successfully.");
+    // نحول بيانات JSONPlaceholder لصيغة اقتباسات
+    return data.map(post => ({
+      text: post.title,
+      category: "Server"
+    }));
   } catch (error) {
-    showNotification("❌ Sync failed: " + error.message);
+    showNotification("❌ Failed to fetch from server");
+    return [];
   }
 }
 
-// ✅ إشعارات للمستخدم
+// ✅ إرسال بيانات جديدة للسيرفر (POST)
+async function postQuoteToServer(newQuote) {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newQuote)
+    });
+    const data = await response.json();
+    console.log("Posted to server:", data);
+    return data;
+  } catch (error) {
+    showNotification("❌ Failed to post to server");
+  }
+}
+
+// ✅ المزامنة
+async function syncQuotes() {
+  let localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
+
+  let serverQuotes = await fetchQuotesFromServer();
+
+  // دمج مع أولوية للسيرفر
+  let merged = [...serverQuotes];
+  localQuotes.forEach(local => {
+    if (!serverQuotes.some(srv => srv.text === local.text)) {
+      merged.push(local);
+      postQuoteToServer(local); // أي اقتباس محلي يترفع للسيرفر
+    }
+  });
+
+  localStorage.setItem("quotes", JSON.stringify(merged));
+  showNotification("✅ Synced with server (JSONPlaceholder).");
+}
+
+// ✅ إشعارات
 function showNotification(msg) {
   notification.innerText = msg;
   notification.style.color = "blue";
   setTimeout(() => (notification.innerText = ""), 4000);
 }
 
-// ✅ مزامنة تلقائية كل 10 ثوانٍ
+// ✅ مزامنة دورية كل 10 ثواني
 setInterval(syncQuotes, 10000);
 
 // ✅ زر لمزامنة يدوية
 syncButton.addEventListener("click", syncQuotes);
+
+
 
 // حدث عند تغيير الفئة
 categoryFilter.addEventListener("change", filterQuotes);
