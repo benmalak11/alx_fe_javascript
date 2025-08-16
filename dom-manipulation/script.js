@@ -201,6 +201,21 @@ function showNotification(msg) {
   setTimeout(() => (notification.innerText = ""), 4000);
 }
 
+// ✅ إشعارات مزامنة
+function showNotification(msg) {
+  const notification = document.getElementById("notification");
+  notification.innerText = msg;
+  notification.style.color = "green";
+  setTimeout(() => (notification.innerText = ""), 4000);
+}
+
+// ✅ مثال عند المزامنة الناجحة
+async function syncQuotes() {
+  // ... (الكود اللي يعمل جلب ودمج البيانات)
+  showNotification("Quotes synced with server!");
+}
+
+
 // ✅ مزامنة دورية كل 10 ثواني
 setInterval(syncQuotes, 10000);
 
