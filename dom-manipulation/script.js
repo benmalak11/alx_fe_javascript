@@ -138,6 +138,62 @@ window.addEventListener("load", () => {
   }
   filterQuotes();
 });
+const notification = document.getElementById("notification");
+const syncButton = document.getElementById("syncNow");
+
+// محاكاة قاعدة بيانات على السيرفر (JSONPlaceholder أو Mock)
+const serverQuotes = [
+  { text: "Server Quote 1", category: "Motivation" },
+  { text: "Server Quote 2", category: "Life" }
+];
+
+// ✅ دالة لجلب البيانات من "الخادم الوهمي"
+function fetchFromServer() {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(serverQuotes);
+    }, 1000);
+  });
+}
+
+// ✅ دالة لمزامنة البيانات
+async function syncQuotes() {
+  let localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
+
+  try {
+    let serverData = await fetchFromServer();
+
+    // دمج البيانات: نعطي أولوية لبيانات السيرفر
+    let merged = [...serverData];
+
+    // مقارنة مع البيانات المحلية وإضافة أي اقتباسات غير موجودة في السيرفر
+    localQuotes.forEach(lq => {
+      if (!serverData.some(sq => sq.text === lq.text)) {
+        merged.push(lq);
+      }
+    });
+
+    // حفظ النتيجة في localStorage
+    localStorage.setItem("quotes", JSON.stringify(merged));
+
+    showNotification("✅ Synced with server. Server data has priority.");
+  } catch (error) {
+    showNotification("❌ Sync failed: " + error.message);
+  }
+}
+
+// ✅ إشعارات للمستخدم
+function showNotification(msg) {
+  notification.innerText = msg;
+  notification.style.color = "blue";
+  setTimeout(() => (notification.innerText = ""), 4000);
+}
+
+// ✅ تشغيل المزامنة كل 10 ثواني (محاكاة تحديثات السيرفر)
+setInterval(syncQuotes, 10000);
+
+// ✅ زر لمزامنة يدوية
+syncButton.addEventListener("click", syncQuotes);
 
 // حدث عند تغيير الفئة
 categoryFilter.addEventListener("change", filterQuotes);
