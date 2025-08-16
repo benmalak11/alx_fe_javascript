@@ -141,42 +141,50 @@ window.addEventListener("load", () => {
 const notification = document.getElementById("notification");
 const syncButton = document.getElementById("syncNow");
 
-// محاكاة قاعدة بيانات على السيرفر (JSONPlaceholder أو Mock)
-const serverQuotes = [
+// ✅ "خادم وهمي" لتجربة (بدل JSONPlaceholder)
+let mockServerData = [
   { text: "Server Quote 1", category: "Motivation" },
   { text: "Server Quote 2", category: "Life" }
 ];
 
-// ✅ دالة لجلب البيانات من "الخادم الوهمي"
-function fetchFromServer() {
-  return new Promise(resolve => {
+// ✅ دالة لجلب البيانات من الخادم (GET)
+async function fetchQuotesFromServer() {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(mockServerData), 1000);
+  });
+}
+
+// ✅ دالة لإرسال بيانات إلى الخادم (POST)
+async function postQuoteToServer(newQuote) {
+  return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(serverQuotes);
+      mockServerData.push(newQuote);
+      resolve({ success: true, data: newQuote });
     }, 1000);
   });
 }
 
-// ✅ دالة لمزامنة البيانات
+// ✅ دالة المزامنة
 async function syncQuotes() {
   let localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
 
   try {
-    let serverData = await fetchFromServer();
+    let serverQuotes = await fetchQuotesFromServer();
 
-    // دمج البيانات: نعطي أولوية لبيانات السيرفر
-    let merged = [...serverData];
-
-    // مقارنة مع البيانات المحلية وإضافة أي اقتباسات غير موجودة في السيرفر
-    localQuotes.forEach(lq => {
-      if (!serverData.some(sq => sq.text === lq.text)) {
-        merged.push(lq);
+    // دمج البيانات (الأولوية للسيرفر)
+    let merged = [...serverQuotes];
+    localQuotes.forEach((local) => {
+      if (!serverQuotes.some((srv) => srv.text === local.text)) {
+        merged.push(local);
+        // إرسال أي اقتباس محلي للسيرفر
+        postQuoteToServer(local);
       }
     });
 
-    // حفظ النتيجة في localStorage
+    // تحديث التخزين المحلي
     localStorage.setItem("quotes", JSON.stringify(merged));
 
-    showNotification("✅ Synced with server. Server data has priority.");
+    showNotification("✅ Synced with server successfully.");
   } catch (error) {
     showNotification("❌ Sync failed: " + error.message);
   }
@@ -189,7 +197,7 @@ function showNotification(msg) {
   setTimeout(() => (notification.innerText = ""), 4000);
 }
 
-// ✅ تشغيل المزامنة كل 10 ثواني (محاكاة تحديثات السيرفر)
+// ✅ مزامنة تلقائية كل 10 ثوانٍ
 setInterval(syncQuotes, 10000);
 
 // ✅ زر لمزامنة يدوية
