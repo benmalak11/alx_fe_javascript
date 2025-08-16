@@ -110,6 +110,37 @@ function populateCategories() {
   });
 }
 
+const categoryFilter = document.getElementById("categoryFilter");
+const quoteDisplay = document.getElementById("quoteDisplay");
+
+// دالة لتصفية الاقتباسات
+function filterQuotes() {
+  let selectedCategory = categoryFilter.value;
+  localStorage.setItem("lastCategory", selectedCategory); // حفظ آخر فئة مختارة
+
+  let filteredQuotes = selectedCategory === "all"
+    ? quotes
+    : quotes.filter(q => q.category === selectedCategory);
+
+  if (filteredQuotes.length === 0) {
+    quoteDisplay.innerText = "No quotes available for this category.";
+  } else {
+    let random = Math.floor(Math.random() * filteredQuotes.length);
+    quoteDisplay.innerText = filteredQuotes[random].text;
+  }
+}
+
+// استرجاع آخر فئة مختارة عند تحميل الصفحة
+window.addEventListener("load", () => {
+  let savedCategory = localStorage.getItem("lastCategory");
+  if (savedCategory) {
+    categoryFilter.value = savedCategory;
+  }
+  filterQuotes();
+});
+
+// حدث عند تغيير الفئة
+categoryFilter.addEventListener("change", filterQuotes);
 // Call this once when the page loads
 populateCategories();
 
